@@ -12,12 +12,18 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 
+/**
+ * Service class responsible for generating PDF reports
+ * containing customer account and card details after registration.
+ */
+
 @Service
 @RequiredArgsConstructor
 public class ReportService {
     @Value("${folder.path}")
     private String folderPath;
 
+    // Generates a PDF document containing the customer's account and card information.
     public String pdfGenerated(ReportRequest request) {
         try {
             String folderPath = this.folderPath;
