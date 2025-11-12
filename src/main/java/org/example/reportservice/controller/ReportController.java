@@ -2,11 +2,12 @@ package org.example.reportservice.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.example.reportservice.dto.ReportRequest;
+import org.example.reportservice.dto.TransactionRequest;
 import org.example.reportservice.service.ReportService;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.io.IOException;
+import java.time.LocalDate;
 
 @RestController
 @RequestMapping("api/reports")
@@ -18,5 +19,10 @@ public class ReportController {
     @PostMapping("/pdf")
     public String pdfGenerated(@RequestBody ReportRequest payload){
         return reportService.pdfGenerated(payload);
+    }
+
+    @GetMapping("/daily-log/{date}")
+    public String dailyLog(@PathVariable LocalDate date, @RequestBody TransactionRequest request) throws IOException {
+        return reportService.dailyLog(date,request);
     }
 }
