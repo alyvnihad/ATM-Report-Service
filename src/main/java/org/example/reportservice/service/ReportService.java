@@ -2,6 +2,7 @@ package org.example.reportservice.service;
 
 import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.PdfWriter;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 import lombok.extern.slf4j.Slf4j;
@@ -11,6 +12,9 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.example.reportservice.dto.ReportRequest;
 import org.example.reportservice.dto.TransactionRequest;
 import org.example.reportservice.dto.TransactionResponse;
+import org.example.reportservice.model.CustomerReport;
+import org.example.reportservice.payload.CustomerReportPayload;
+import org.example.reportservice.repository.ReportRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -24,21 +28,19 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 
 
-/**
- * Service class responsible for generating PDF reports
- * containing customer account and card details after registration.
- */
-
+//Service class responsible for generating PDF reports
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class ReportService {
 
     private final RestTemplate restTemplate;
+    private final ReportRepository reportRepository;
 
     @Value("${transaction.url}")
     private String transactionUrl;
@@ -47,6 +49,7 @@ public class ReportService {
     private String folderPath;
 
     // Generates a PDF document containing the customer's account and card information.
+    @Transactional
     public String pdfGenerated(ReportRequest request) {
         try {
             String folderPath = this.folderPath;
@@ -82,7 +85,9 @@ public class ReportService {
         }
     }
 
-    public String dailyLog(LocalDate date ,TransactionRequest request) throws IOException {
+    // generate Daily Log pdf
+    @Transactional
+    public String dailyLog(LocalDate date, TransactionRequest request) throws IOException {
         request.setDate(date);
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setBearerAuth(request.getRefreshToken());
@@ -134,4 +139,22 @@ public class ReportService {
         return null;
     }
 
+    @Transactional
+    public void customerReport(CustomerReportPayload payload) {
+        CustomerReport report = reportRepository.findByAccountIdAndType(payload.getAccountId(), payload.getType()).orElseGet(() ->
+                {
+                    CustomerReport customerReport = new CustomerReport();
+                    customerReport.setAccountId(payload.getAccountId());
+                    customerReport.setCardNumber(payload.getCardNumber());
+                    customerReport.setType(payload.getType());
+                    customerReport.setAmount(0.0);
+                    customerReport.setCreatedAt(LocalDateTime.now());
+                    return customerReport;
+                });
+
+        report.setAmount(report.getAmount() + payload.getAmount());
+        report.setCreatedAt(LocalDateTime.now());
+
+        reportRepository.save(report);
+    }
 }
