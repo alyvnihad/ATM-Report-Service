@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.YearMonth;
 
 @RestController
 @RequestMapping("api/reports")
@@ -22,7 +23,7 @@ public class ReportController {
         return reportService.pdfGenerated(payload);
     }
 
-    @GetMapping("/daily-log/{date}")
+    @PostMapping("/daily-log/{date}")
     public String dailyLog(@PathVariable LocalDate date, @RequestBody TransactionRequest request) throws IOException {
         return reportService.dailyLog(date,request);
     }
@@ -30,5 +31,10 @@ public class ReportController {
     @PostMapping("/customer-report")
     public void customerReport(@RequestBody CustomerReportPayload payload){
         reportService.customerReport(payload);
+    }
+
+    @GetMapping("/top-amount/{month}")
+    public String topAmountMonthly(@PathVariable YearMonth month){
+        return reportService.topAmountMonthly(month);
     }
 }
