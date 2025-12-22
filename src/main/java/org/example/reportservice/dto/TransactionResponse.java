@@ -12,5 +12,5 @@ public class TransactionResponse {
     private Long cardNumber;
     private Double amount;
     private String type;
-    private LocalDateTime dateTime;
+    private LocalDateTime createdAt;
 }
